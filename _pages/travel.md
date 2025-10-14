@@ -10,15 +10,15 @@ permalink: /travel/
   /* Styles for the globe and visited areas */
   .water { fill: #c1dff0; }
   .land { 
-    fill: #fff;           /* --- CHANGE 1: Land is now white --- */
-    stroke: #ccc;         /* --- CHANGE 2: Country borders are light grey --- */
+    fill: #fff;
+    stroke: #ccc;
     stroke-width: 0.7px;
   }
   .visited { fill: #f06; } /* Highlight color for visited places */
-  .graticule { display: none; } /* Hide the grid lines for a cleaner look */
+  .graticule { display: none; }
   .province {
-    fill: none;           /* Provinces are transparent by default */
-    stroke: #aaa;         /* Province borders are a slightly darker grey */
+    fill: none;
+    stroke: #aaa;
     stroke-width: 0.5px;
   }
   #map {
@@ -84,13 +84,14 @@ permalink: /travel/
       d3.json("{{ '/assets/travel-data/visited.json' | relative_url }}", function(error, visited) {
         if (error) throw error;
 
-        // --- CHANGE 3: Logic to determine visited countries ---
+        // --- THE FIX: Create sets and handle potentially missing data ---
         const visitedProvincesSet = new Set(visited);
         const visitedCountriesSet = new Set();
+
         provinces.features.forEach(function(province) {
-            // This assumes your provinces.geojson has a 'country' property for each province.
-            if (visitedProvincesSet.has(province.properties.name)) {
-                visitedCountriesSet.add(province.properties.sovereignt); // Use 'sovereignt' property from your geojson
+            // ONLY add the country if the 'sovereignt' property EXISTS
+            if (visitedProvincesSet.has(province.properties.name) && province.properties.sovereignt) {
+                visitedCountriesSet.add(province.properties.sovereignt);
             }
         });
 
@@ -100,9 +101,9 @@ permalink: /travel/
             .attr("class", "land")
             .attr("d", path);
 
-        // --- CHANGE 4: Filter provinces before drawing ---
+        // Filter provinces: ONLY include if 'sovereignt' EXISTS and is in our set
         const provincesToDraw = provinces.features.filter(function(d) {
-            return visitedCountriesSet.has(d.properties.sovereignt);
+            return d.properties.sovereignt && visitedCountriesSet.has(d.properties.sovereignt);
         });
         
         // Draw provinces for visited countries ONLY
@@ -113,7 +114,7 @@ permalink: /travel/
           .attr("d", path);
         
         // Fill visited provinces with color
-        svg.selectAll(".province-visited") // Use a new class to avoid conflicts
+        svg.selectAll(".province-visited")
           .data(provinces.features.filter(d => visitedProvincesSet.has(d.properties.name)))
           .enter().append("path")
           .attr("class", "province-visited visited")
