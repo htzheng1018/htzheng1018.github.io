@@ -2,7 +2,7 @@
 layout: about
 title: about
 permalink: /
-subtitle: <a href='#'>Affiliations</a>. Address. Contacts. Motto. Etc.
+subtitle: <a href='https://www1.bio.ku.dk/english/research/scarb/'>Computational Biology</a> at <a href='https://www.ku.dk/en'>University of Copenhagen</a>
 
 profile:
   align: right
@@ -27,4 +27,8 @@ latest_posts:
   limit: 3 # leave blank to include all the blog posts
 ---
 
-I am a research assistant at Department of Computational Biology in University of Copenhagen.
+I am currently a research assistant in <a href='https://www1.bio.ku.dk/english/research/scarb/'>Computational Biology</a> at U<a href='https://www.ku.dk/en'>University of Copenhagen</a>. Previously, I received my master's degree in Biostatistics at <a href='https://umich.edu/'>University of Michigan Ann Arbor</a>, and my bachelor's degree in Financial Engineering at <a href='https://en.whu.edu.cn/'>Wuhan University</a>. My Chinese name is 郑皓天.
+
+My research interests include survival analysis and the application of deep learning methods to genomics.
+
+I am currently seeking a Ph.D. position for Fall 2026! Any advice or suggestions are welcome!
