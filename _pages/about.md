@@ -1,6 +1,6 @@
 ---
 layout: about
-title: about
+title: About
 permalink: /
 subtitle: <a href='https://www1.bio.ku.dk/english/research/scarb/'>Computational Biology</a> at <a href='https://www.ku.dk/en'>University of Copenhagen</a>
 
