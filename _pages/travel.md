@@ -10,10 +10,14 @@ permalink: /travel/
   .water { fill: #c1dff0; }
   .land { fill: #fff; stroke: #ccc; stroke-width: 0.7px; }
   .graticule { display: none; }
-  .province {
-    /* This class now ONLY defines the border style */
+  .province-border {
+    fill: none; /* Borders have no color inside */
     stroke: #aaa;
     stroke-width: 0.5px;
+  }
+  .province-fill {
+    fill: #f06; /* Fills are red */
+    stroke: none; /* Fills have no border to avoid double lines */
   }
   #map { display: block; margin: 0 auto; max-width: 600px; }
   #visited_list ul { list-style-type: none; padding: 0; text-align: center; column-count: 3; }
@@ -51,6 +55,10 @@ permalink: /travel/
         if (error) throw error;
 
         const visitedProvincesSet = new Set(visited);
+
+        // --- THE FINAL FIX: Two separate, independent drawing operations ---
+
+        // 1. Determine which countries to draw borders for.
         const visitedCountriesSet = new Set();
         provinces.features.forEach(function(p) {
           if (visitedProvincesSet.has(p.properties.name) && p.properties.sovereignt) {
@@ -58,22 +66,26 @@ permalink: /travel/
           }
         });
 
+        // 2. Draw the base land layer
         svg.insert("path", ".graticule").datum(world).attr("class", "land").attr("d", path);
 
-        const provincesToDraw = provinces.features.filter(d => d.properties.sovereignt && visitedCountriesSet.has(d.properties.sovereignt));
-
-        // --- THE FINAL FIX: Set styles directly in code ---
-        svg.selectAll(".province")
-          .data(provincesToDraw)
+        // 3. Operation A: Draw BORDERS for provinces in visited countries
+        const provincesForBorders = provinces.features.filter(d => d.properties.sovereignt && visitedCountriesSet.has(d.properties.sovereignt));
+        svg.selectAll(".province-border")
+          .data(provincesForBorders)
           .enter().append("path")
-          .attr("class", "province") // All paths get the 'province' class for the border
-          .style("fill", function(d) {
-            // Apply fill color directly.
-            // If visited, return red. If not, return transparent ('none').
-            return visitedProvincesSet.has(d.properties.name) ? "#f06" : "none";
-          })
+          .attr("class", "province-border")
           .attr("d", path);
 
+        // 4. Operation B: Draw red FILLS for visited provinces (independent of Operation A)
+        const provincesForFill = provinces.features.filter(d => visitedProvincesSet.has(d.properties.name));
+        svg.selectAll(".province-fill")
+          .data(provincesForFill)
+          .enter().append("path")
+          .attr("class", "province-fill")
+          .attr("d", path);
+
+        // 5. Display the list
         const listContainer = d3.select("#visited_list");
         listContainer.append("ul").selectAll("li").data(visited.sort()).enter().append("li").text(d => d);
       });
