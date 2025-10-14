@@ -11,12 +11,9 @@ permalink: /travel/
   .land { fill: #fff; stroke: #ccc; stroke-width: 0.7px; }
   .graticule { display: none; }
   .province {
-    fill: none; /* Default provinces are transparent */
+    /* This class now ONLY defines the border style */
     stroke: #aaa;
     stroke-width: 0.5px;
-  }
-  .visited {
-    fill: #f06; /* Visited provinces have a red fill */
   }
   #map { display: block; margin: 0 auto; max-width: 600px; }
   #visited_list ul { list-style-type: none; padding: 0; text-align: center; column-count: 3; }
@@ -65,13 +62,15 @@ permalink: /travel/
 
         const provincesToDraw = provinces.features.filter(d => d.properties.sovereignt && visitedCountriesSet.has(d.properties.sovereignt));
 
-        // --- THE FIX: Use a single drawing operation ---
+        // --- THE FINAL FIX: Set styles directly in code ---
         svg.selectAll(".province")
           .data(provincesToDraw)
           .enter().append("path")
-          .attr("class", function(d) {
-            // If the province is in the visited list, give it BOTH classes
-            return visitedProvincesSet.has(d.properties.name) ? "province visited" : "province";
+          .attr("class", "province") // All paths get the 'province' class for the border
+          .style("fill", function(d) {
+            // Apply fill color directly.
+            // If visited, return red. If not, return transparent ('none').
+            return visitedProvincesSet.has(d.properties.name) ? "#f06" : "none";
           })
           .attr("d", path);
 
