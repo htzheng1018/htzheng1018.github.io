@@ -671,3 +671,5 @@ social:
 #   source: /_bibliography/
 #   bibliography: papers.bib # 确保您的bib文件名是这个
 #   # ... (后面的部分保持默认即可) ...
+
+# Trigger deployment October 14
