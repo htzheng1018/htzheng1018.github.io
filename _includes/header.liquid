@@ -56,6 +56,10 @@
             </a>
           </li>
 
+          <li class="nav-item {% if page.url == '/travel/travel.html' %}active{% endif %}">
+            <a class="nav-link" href="{{ '/travel/travel.html' | relative_url }}">Travel</a>
+          </li>
+
           <!-- Other pages -->
           {% assign sorted_pages = site.pages | sort: 'nav_order' %}
           {% for p in sorted_pages %}
