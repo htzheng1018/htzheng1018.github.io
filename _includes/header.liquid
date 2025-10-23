@@ -107,7 +107,11 @@
                   {%- else -%}
                     {%- assign url = p.url -%}
                   {%- endif %}
-                  <a class="nav-link" href="{{ url | relative_url }}">
+                  {% if p.title == "Curriculum Vitae" %}
+                    <a class="nav-link" href="{{ '/assets/pdf/CV.pdf' | relative_url }}" target="_blank"> {{- p.title -}} </a>
+                  {% else %}
+                    <a class="nav-link" href="{{ url | relative_url }}"> {{- p.title -}} </a>
+                  {% endif %}
                     {{- p.title }}
                     {% if page.url contains p.url %}
                       <span class="sr-only">(current)</span>
