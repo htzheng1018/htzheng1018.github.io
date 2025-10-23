@@ -5,4 +5,4 @@ inline: true
 related_posts: false
 ---
 
-A simple inline announcement.
+I joined the University of Copenhagen as a research assistant :smile:
