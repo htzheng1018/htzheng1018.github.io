@@ -31,4 +31,4 @@ I am currently a research assistant in <a href='https://www1.bio.ku.dk/english/r
 
 My research interests include survival analysis and the application of deep learning methods to genomics. Currently, I am studying the influence of A-to-I RNA modifications on Parkinson’s disease.
 
-Outside of research, I enjoy playing football, badminton, and piano, as well as traveling — I’ve visited over 20 countries :sunglasses: Feel free to recommend me some beautiful places to explore!
+Outside of research, I enjoy playing football, badminton, and piano, as well as traveling — I’ve visited over 20 countries :sunglasses: Feel free to recommend me some beautiful places to explore! You can reach me at [htzheng@ku.bio.dk](mailto:htzheng@ku.bio.dk).
