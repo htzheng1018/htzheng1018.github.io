@@ -33,4 +33,4 @@ My research interests include survival analysis and the application of deep lear
 
 Outside of research, I enjoy playing football, badminton, and piano, as well as traveling — I’ve visited over 20 countries :sunglasses: Feel free to recommend me some beautiful places to explore!
 
-<p>Email: <span style="color: #b509ac;">htzheng@ku.bio.dk</span></p>.
+<p>Email: <span style="color: #b509ac;">htzheng@bio.ku.dk</span></p>.
