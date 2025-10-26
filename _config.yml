@@ -575,18 +575,6 @@ jsonresume:
 
 
 # -----------------------------------------------------------------------------
-# Social media settings
-# -----------------------------------------------------------------------------
-
-social:
-  - icon: fas fa-envelope
-    link: "mailto:htzheng@ku.bio.dk" # <-- 您的邮箱
-  - icon: fab fa-github
-    link: htzheng1018 # <-- 您的 GitHub 用户名
-  # - icon: ai ai-google-scholar
-    # link: "https://scholar.google.com/citations?user=YOUR_USER_ID" # <-- 替换成您的谷歌学术链接
-
-# -----------------------------------------------------------------------------
 # Jekyll Scholar - A crucial part for publications
 # -----------------------------------------------------------------------------
 
