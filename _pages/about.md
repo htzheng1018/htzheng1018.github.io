@@ -9,7 +9,7 @@ profile:
   image: profile-picture.jpg
   image_circular: false # crops the image to make it circular
   more_info: >
-    <p>555 your office number</p>
+    <p>Office 1.2.34</p>
     <p>Ole Maaløes Vej 5</p>
     <p>Copenhagen, Denmark</p>
 
