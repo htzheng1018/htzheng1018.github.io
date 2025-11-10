@@ -6,6 +6,9 @@ nav_order: 4
 permalink: /cv/
 ---
 
-<script>
-  window.location.href = "{{ '/assets/pdf/CV.pdf' | relative_url }}";
-</script>
+<iframe 
+    src="{{ '/assets/pdf/CV.pdf' | relative_url }}" 
+    width="100%" 
+    height="1000px" 
+    style="border: none;">
+</iframe>
