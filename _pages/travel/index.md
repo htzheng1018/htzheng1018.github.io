@@ -3,6 +3,7 @@ title: Travel
 nav: true
 nav_order: 5 
 layout: null
+permalink: /travel/
 ---
 
 <!DOCTYPE html>
@@ -41,7 +42,7 @@ layout: null
             <a class="nav-link me-lg-3" href="../publications/">PAPERS</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link me-lg-3" href="travel.html">TRAVEL</a>
+            <a class="nav-link me-lg-3" href="/travel/">TRAVEL</a>
           </li>
         </ul>
       </div>
