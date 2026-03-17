@@ -27,7 +27,7 @@ latest_posts:
   limit: 3 # leave blank to include all the blog posts
 ---
 
-I am currently a research assistant in <a href='https://www1.bio.ku.dk/english/research/scarb/'>Computational Biology</a> at <a href='https://www.ku.dk/en'>University of Copenhagen</a>. Previously, I received my master's degree in Biostatistics at <a href='https://umich.edu/'>University of Michigan Ann Arbor</a>, and my bachelor's degree in Financial Engineering at <a href='https://en.whu.edu.cn/'>Wuhan University</a>. My Chinese name is 郑皓天.
+I am currently a Ph.D. student in <a href='https://www1.bio.ku.dk/english/research/scarb/'>Computational Biology</a> at <a href='https://www.ku.dk/en'>University of Copenhagen</a>. Previously, I received my master's degree in Biostatistics at <a href='https://umich.edu/'>University of Michigan Ann Arbor</a>, and my bachelor's degree in Financial Engineering at <a href='https://en.whu.edu.cn/'>Wuhan University</a>. My Chinese name is 郑皓天.
 
 My research interests include survival analysis and the application of deep learning methods to genomics. Currently, I am studying the influence of A-to-I RNA modifications on Parkinson’s disease.
 
