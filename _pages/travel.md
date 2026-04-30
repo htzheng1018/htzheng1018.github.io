@@ -42,32 +42,37 @@ nav_order: 5
     
     // 预处理你读取的 visited.json
     const normalizedFootprints = visited.map(normalizeStr);
-    
-    // 自动修正部分非标准英文拼写以防无法匹配 (对应你的 JSON 文件)
-    normalizedFootprints.push("missouri", "dubai");
+    // normalizedFootprints.push("missouri", "dubai");
 
-    // 合并地图边界
-    const allFeatures = [...countries.features, ...provinces.features];
+    // 【提速核心】：过滤省份数据，把没去过的省份直接剔除，不参与 3D 渲染！
+    const visitedProvinces = provinces.features.filter(feat => {
+      const featureName = normalizeStr(feat.properties.name || feat.properties.NAME || feat.properties.NAME_1 || '');
+      return normalizedFootprints.some(place => 
+        featureName === place || 
+        (place.length > 3 && featureName.includes(place)) || 
+        (featureName.length > 3 && place.includes(featureName))
+      );
+    });
+
+    // 现在只合并“国家底图”和“去过的省份”
+    const allFeatures = [...countries.features, ...visitedProvinces];
 
     globe
       .polygonsData(allFeatures)
       .polygonCapColor(feat => {
-        // 读取地图板块的名称
+        // 判断：如果这个 feature 在我们筛选出的 visitedProvinces 里，或者是国家底图中名字能匹配上的（比如国家级的 Dubai）
         const featureName = normalizeStr(feat.properties.name || feat.properties.NAME || feat.properties.NAME_1 || '');
-        
-        // 匹配算法：互相包含或精准匹配
         const isVisited = normalizedFootprints.some(place => 
           featureName === place || 
           (place.length > 3 && featureName.includes(place)) || 
           (featureName.length > 3 && place.includes(featureName))
         );
 
-        if (isVisited) {
+        if (isVisited || visitedProvinces.includes(feat)) {
           return 'rgba(220, 53, 69, 0.8)'; // 点亮为红色
         }
-        return baseColor; // 未去过的地方留白
+        return baseColor; // 国家底图留白
       })
-      // .polygonSideColor(() => 'rgba(0, 0, 0, 0.05)')
       .polygonStrokeColor(() => strokeColor)
       .polygonLabel(feat => {
         const name = feat.properties.name || feat.properties.NAME || feat.properties.NAME_1 || 'Unknown';
