@@ -8,43 +8,57 @@ nav_order: 5
 
 <!-- prettier-ignore-start -->
 
-<!-- 3D 地球仪容器 -->
-<div id="globeViz" style="width: 100%; height: 600px; cursor: grab; margin-top: 20px; border-radius: 10px; overflow: hidden;"></div>
+<!-- 增加了一个相对定位的外层容器，用来放置 Loading 提示和地球仪 -->
+<div style="position: relative; width: 100%; height: 600px; margin-top: 20px;">
+  
+  <!-- Loading 提示框 -->
+  <div id="loading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 1.2em; color: #888; z-index: 10;">
+    🌍 Downloading Map Data (approx. 15MB), please wait...
+  </div>
+
+  <!-- 3D 地球仪容器 -->
+  <div id="globeViz" style="width: 100%; height: 100%; cursor: grab; border-radius: 10px; overflow: hidden;"></div>
+
+</div>
 
 <!-- 引入库 -->
 <script src="https://unpkg.com/globe.gl"></script>
 
 <script>
-  // 获取当前页面的主题颜色 (适配暗色/亮色模式)
   const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
   const baseColor = isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
   const strokeColor = isDarkMode ? '#444' : '#ccc';
 
-  // 字符串标准化：转小写并去除特殊音标 (例如：Hokkaidō -> hokkaido)
   const normalizeStr = (str) => {
     return str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
   };
 
   const elem = document.getElementById('globeViz');
+  
+  // 【修复 1】：强制指定初始化时的宽度和高度，解决地球偏移问题
   const globe = Globe()(elem)
+    .width(elem.clientWidth)
+    .height(elem.clientHeight)
     .backgroundColor('rgba(0,0,0,0)')
     .showGlobe(false)
-    // .polygonAltitude(0.01);
-    .polygonAltitude(0) // 设为 0，变成 2D 贴图，大大降低 GPU 负担
-    .polygonResolution(3);
+    .polygonAltitude(0)
+    .polygonResolution(2); // 进一步降低内置分辨率，提升渲染速度
 
-  // 同时获取三个数据文件
+  // 【修复 2】：使用绝对路径，并加入 catch 捕捉错误
   Promise.all([
     fetch('/assets/json/countries.geojson').then(r => r.json()),
     fetch('/assets/json/provinces.geojson').then(r => r.json()),
     fetch('/assets/json/visited.json').then(r => r.json())
   ]).then(([countries, provinces, visited]) => {
     
-    // 预处理你读取的 visited.json
-    const normalizedFootprints = visited.map(normalizeStr);
-    // normalizedFootprints.push("missouri", "dubai");
+    // 数据加载成功，隐藏 Loading 提示
+    document.getElementById('loading').style.display = 'none';
 
-    // 【提速核心】：过滤省份数据，把没去过的省份直接剔除，不参与 3D 渲染！
+    const normalizedFootprints = visited.map(normalizeStr);
+    // 这里如果 json 里没有 missouri，系统也不会报错，不影响你的动态更新逻辑
+    normalizedFootprints.push("missouri", "dubai");
+
+    // 过滤省份数据
     const visitedProvinces = provinces.features.filter(feat => {
       const featureName = normalizeStr(feat.properties.name || feat.properties.NAME || feat.properties.NAME_1 || '');
       return normalizedFootprints.some(place => 
@@ -54,13 +68,11 @@ nav_order: 5
       );
     });
 
-    // 现在只合并“国家底图”和“去过的省份”
     const allFeatures = [...countries.features, ...visitedProvinces];
 
     globe
       .polygonsData(allFeatures)
       .polygonCapColor(feat => {
-        // 判断：如果这个 feature 在我们筛选出的 visitedProvinces 里，或者是国家底图中名字能匹配上的（比如国家级的 Dubai）
         const featureName = normalizeStr(feat.properties.name || feat.properties.NAME || feat.properties.NAME_1 || '');
         const isVisited = normalizedFootprints.some(place => 
           featureName === place || 
@@ -69,9 +81,9 @@ nav_order: 5
         );
 
         if (isVisited || visitedProvinces.includes(feat)) {
-          return 'rgba(220, 53, 69, 0.8)'; // 点亮为红色
+          return 'rgba(220, 53, 69, 0.8)';
         }
-        return baseColor; // 国家底图留白
+        return baseColor;
       })
       .polygonStrokeColor(() => strokeColor)
       .polygonLabel(feat => {
@@ -86,11 +98,17 @@ nav_order: 5
     globe.controls().autoRotate = true;
     globe.controls().autoRotateSpeed = 1.0;
     globe.controls().enableZoom = true;
+
+  }).catch(error => {
+    // 如果加载失败，在页面上显示报错信息，方便排查
+    document.getElementById('loading').innerText = '⚠️ Error loading map data. Please check the browser console.';
+    console.error("Fetch Data Error:", error);
   });
 
-  // 窗口自适应
+  // 窗口大小改变时，重新计算宽高
   window.addEventListener('resize', () => {
     globe.width(elem.clientWidth);
+    globe.height(elem.clientHeight);
   });
 </script>
 
