@@ -34,31 +34,34 @@ nav_order: 5
   };
 
   const elem = document.getElementById('globeViz');
-  
-  // 【修复 1】：强制指定初始化时的宽度和高度，解决地球偏移问题
   const globe = Globe()(elem)
     .width(elem.clientWidth)
     .height(elem.clientHeight)
     .backgroundColor('rgba(0,0,0,0)')
     .showGlobe(false)
-    .polygonAltitude(0)
-    .polygonResolution(2); // 进一步降低内置分辨率，提升渲染速度
+    .polygonAltitude(0) 
+    .polygonResolution(2);
 
-  // 【修复 2】：使用绝对路径，并加入 catch 捕捉错误
+  // 【终极升级】：严苛的 Fetch 拦截器，一旦找不到文件立刻在屏幕上报错！
+  const loadData = (url) => {
+    return fetch(url).then(r => {
+      if (!r.ok) throw new Error(`找不到文件 (HTTP ${r.status}): ${url}`);
+      return r.json();
+    });
+  };
+
+  // 使用 Jekyll 的相对路径，防止 GitHub Pages 路径迷失
   Promise.all([
-    fetch('/assets/json/countries.geojson').then(r => r.json()),
-    fetch('/assets/json/provinces.geojson').then(r => r.json()),
-    fetch('/assets/json/visited.json').then(r => r.json())
+    loadData('{{ "/assets/json/countries.geojson" | relative_url }}'),
+    loadData('{{ "/assets/json/provinces.geojson" | relative_url }}'),
+    loadData('{{ "/assets/json/visited.json" | relative_url }}')
   ]).then(([countries, provinces, visited]) => {
     
-    // 数据加载成功，隐藏 Loading 提示
     document.getElementById('loading').style.display = 'none';
 
     const normalizedFootprints = visited.map(normalizeStr);
-    // 这里如果 json 里没有 missouri，系统也不会报错，不影响你的动态更新逻辑
-    normalizedFootprints.push("missouri", "dubai");
-
-    // 过滤省份数据
+    
+    // 过滤出你去过的省份
     const visitedProvinces = provinces.features.filter(feat => {
       const featureName = normalizeStr(feat.properties.name || feat.properties.NAME || feat.properties.NAME_1 || '');
       return normalizedFootprints.some(place => 
@@ -100,12 +103,11 @@ nav_order: 5
     globe.controls().enableZoom = true;
 
   }).catch(error => {
-    // 如果加载失败，在页面上显示报错信息，方便排查
-    document.getElementById('loading').innerText = '⚠️ Error loading map data. Please check the browser console.';
+    // 拦截到错误，直接在网页中央显示红字！
+    document.getElementById('loading').innerHTML = `<span style="color: #dc3545;">⚠️ 数据加载失败: <br>${error.message}<br>请检查 GitHub 仓库中文件的扩展名是 .json 还是 .geojson</span>`;
     console.error("Fetch Data Error:", error);
   });
 
-  // 窗口大小改变时，重新计算宽高
   window.addEventListener('resize', () => {
     globe.width(elem.clientWidth);
     globe.height(elem.clientHeight);
