@@ -28,8 +28,10 @@ nav_order: 5
   const elem = document.getElementById('globeViz');
   const globe = Globe()(elem)
     .backgroundColor('rgba(0,0,0,0)')
-    .showGlobe(false) 
-    .polygonAltitude(0.01);
+    .showGlobe(false)
+    // .polygonAltitude(0.01);
+    .polygonAltitude(0) // 设为 0，变成 2D 贴图，大大降低 GPU 负担
+    .polygonResolution(3);
 
   // 同时获取三个数据文件
   Promise.all([
@@ -65,7 +67,7 @@ nav_order: 5
         }
         return baseColor; // 未去过的地方留白
       })
-      .polygonSideColor(() => 'rgba(0, 0, 0, 0.05)')
+      // .polygonSideColor(() => 'rgba(0, 0, 0, 0.05)')
       .polygonStrokeColor(() => strokeColor)
       .polygonLabel(feat => {
         const name = feat.properties.name || feat.properties.NAME || feat.properties.NAME_1 || 'Unknown';
