@@ -59,21 +59,28 @@ nav_order: 5
 
     const normalizedFootprints = visited.map(normalizeStr);
 
-    // 【终极精准匹配逻辑】：彻底解决墨西哥、Janeiro 等无辜躺枪问题
+    // 【终极精准匹配逻辑】：防脱靶，绝不乱杀无辜
     const isPlaceVisited = (featureName) => {
       if (!featureName) return false;
       return normalizedFootprints.some(place => {
-        // 1. 完全精准一致
+        // 1. 完全精准一致 (最高优先级)
         if (featureName === place) return true;
         
-        // 2. 特殊缩写处理（严禁使用模糊 includes）
+        // 2. 特殊缩写处理
         if (place === 'dc' && (featureName === 'district of columbia' || featureName === 'washington dc')) return true;
-        if (place === 'inner mongol' && (featureName === 'inner mongolia' || featureName === 'nei mongol' || featureName === 'nei mongol zizhiqu')) return true;
+        if (place === 'inner mongol' && (featureName.includes('mongol') || featureName.includes('nei'))) return true;
 
-        // 3. 安全的单词边界匹配
+        // 3. 【新增】：防碰瓷黑名单 (排除脱靶效应)
+        // 排除 Baja California (墨西哥) 碰瓷 California
+        if (place === 'california' && featureName.includes('baja')) return false;
+        // 排除 West Virginia 碰瓷 Virginia (为你以后的旅行防患于未然)
+        if (place === 'virginia' && featureName.includes('west')) return false;
+        // 排除 New York 碰瓷 York (如果你以后只写了 York)
+        if (place === 'york' && featureName.includes('new')) return false;
+
+        // 4. 安全的单词边界匹配
         if (place.length > 3) {
           try {
-            // 使用 \b 确保匹配的是完整单词，避免 "nei" 匹配到 "janeiro"
             const regex = new RegExp(`\\b${place}\\b`, 'i');
             if (regex.test(featureName)) return true;
           } catch (e) {
@@ -125,9 +132,10 @@ nav_order: 5
         `;
       });
 
-    // 【修改点】：让地球静止。如果想让它慢慢转，改回 true 并将 Speed 调成 0.2
+    // 【修改点】：让地球静止不动。
+    // 如果以后你想让它非常非常缓慢地转，就把 false 改成 true，下面那个 speed 是 0.1
     globe.controls().autoRotate = false;
-    globe.controls().autoRotateSpeed = 1.0;
+    globe.controls().autoRotateSpeed = 0.1;
     globe.controls().enableZoom = true;
 
   }).catch(error => {
