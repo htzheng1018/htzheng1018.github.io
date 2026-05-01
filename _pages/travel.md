@@ -8,20 +8,13 @@ nav_order: 5
 
 <!-- prettier-ignore-start -->
 
-<!-- 增加了一个相对定位的外层容器，用来放置 Loading 提示和地球仪 -->
 <div style="position: relative; width: 100%; height: 600px; margin-top: 20px;">
-  
-  <!-- Loading 提示框 -->
   <div id="loading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 1.2em; color: #888; z-index: 10;">
     🌍 Downloading Map Data, please wait...
   </div>
-
-  <!-- 3D 地球仪容器 -->
   <div id="globeViz" style="width: 100%; height: 100%; cursor: grab; border-radius: 10px; overflow: hidden;"></div>
-
 </div>
 
-<!-- 引入库 -->
 <script src="https://unpkg.com/globe.gl"></script>
 
 <script>
@@ -59,23 +52,20 @@ nav_order: 5
 
     const normalizedFootprints = visited.map(normalizeStr);
 
-    // 【终极精准匹配逻辑】：防脱靶，绝不乱杀无辜
     const isPlaceVisited = (featureName) => {
       if (!featureName) return false;
       return normalizedFootprints.some(place => {
-        // 1. 完全精准一致 (最高优先级)
+        // 1. 完全精准一致
         if (featureName === place) return true;
         
-        // 2. 特殊缩写处理
+        // 2. 特殊缩写处理（绝对精准，拒绝碰瓷）
         if (place === 'dc' && (featureName === 'district of columbia' || featureName === 'washington dc')) return true;
-        if (place === 'inner mongol' && (featureName.includes('mongol') || featureName.includes('nei'))) return true;
+        // 【修复点】：精准匹配内蒙古的常见拼写，不再使用宽泛的 includes('mongol')
+        if (place === 'inner mongol' && (featureName === 'inner mongolia' || featureName === 'nei mongol' || featureName === 'nei mongol zizhiqu')) return true;
 
-        // 3. 【新增】：防碰瓷黑名单 (排除脱靶效应)
-        // 排除 Baja California (墨西哥) 碰瓷 California
+        // 3. 防碰瓷黑名单
         if (place === 'california' && featureName.includes('baja')) return false;
-        // 排除 West Virginia 碰瓷 Virginia (为你以后的旅行防患于未然)
         if (place === 'virginia' && featureName.includes('west')) return false;
-        // 排除 New York 碰瓷 York (如果你以后只写了 York)
         if (place === 'york' && featureName.includes('new')) return false;
 
         // 4. 安全的单词边界匹配
@@ -132,8 +122,6 @@ nav_order: 5
         `;
       });
 
-    // 【修改点】：让地球静止不动。
-    // 如果以后你想让它非常非常缓慢地转，就把 false 改成 true，下面那个 speed 是 0.1
     globe.controls().autoRotate = false;
     globe.controls().autoRotateSpeed = 0.1;
     globe.controls().enableZoom = true;
