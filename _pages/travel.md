@@ -19,8 +19,11 @@ nav_order: 5
 
 <script>
   const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
-  const baseColor = isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+  // 【微调1】：把多边形底色的透明度从 0.05 提高到 0.15，让陆地轮廓更明显
+  const baseColor = isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)';
   const strokeColor = isDarkMode ? '#444' : '#ccc';
+  // 【新增】：定义一个与 al-folio 背景相融的“磨砂玻璃”地球内芯颜色，透明度设为 0.7
+  const globeCoreColor = isDarkMode ? 'rgba(30, 30, 30, 0.7)' : 'rgba(250, 250, 250, 0.7)';
 
   const normalizeStr = (str) => {
     return str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
@@ -32,8 +35,9 @@ nav_order: 5
     .width(elem.clientWidth)
     .height(elem.clientHeight)
     .backgroundColor('rgba(0,0,0,0)')
-    .showGlobe(false)
-    .polygonAltitude(0); 
+    .showGlobe(true) // 【微调2】：把 false 改成 true，召唤地球本体
+    .globeColor(globeCoreColor) // 【微调3】：注入磨砂玻璃颜色
+    .polygonAltitude(0);
 
   const loadData = (url) => {
     return fetch(url).then(r => {
