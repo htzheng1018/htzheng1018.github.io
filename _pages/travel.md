@@ -20,9 +20,9 @@ nav_order: 5
 <script>
   const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
   
-  // 【修复 1】：把透明度大幅调高（比如 0.4 或 0.5）。正面的陆地变厚实了，就能自然遮挡背面的线条
-  const baseColor = isDarkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)';
-  const strokeColor = isDarkMode ? '#444' : '#ccc';
+  // 【优化 1：取消透视】直接使用 100% 不透明的实体颜色 (Hex)
+  const baseColor = isDarkMode ? '#2b2b2b' : '#e0e0e0'; // 未去过的陆地：深灰 / 浅灰
+  const strokeColor = isDarkMode ? '#444444' : '#cccccc'; // 边界线颜色
   
   const normalizeStr = (str) => {
     return str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
@@ -33,9 +33,8 @@ nav_order: 5
   const globe = Globe()(elem)
     .width(elem.clientWidth)
     .height(elem.clientHeight)
-    .backgroundColor('rgba(0,0,0,0)')
-    // 【修复 2】：改回 false 隐藏黑色内核，并删除惹祸的 globeColor
-    .showGlobe(false)
+    .backgroundColor('rgba(0,0,0,0)') // 保持外部背景透明
+    .showGlobe(false) // 保持内核隐藏（海洋全透明）
     .polygonAltitude(0); 
 
   const loadData = (url) => {
@@ -59,18 +58,14 @@ nav_order: 5
       normalizedFootprints[countryCode] = places.map(normalizeStr);
     }
 
-    // 【极简精准匹配】：因为用了 name_en 和国家代码，不再需要任何复杂的正则和防碰瓷！
+    // 极简精准匹配
     const isPlaceVisited = (feat) => {
       const countryCode = feat.properties.iso_a2 || feat.properties.ISO_A2 || '';
-      
-      // 如果国家没去过，直接 false
       if (!normalizedFootprints[countryCode]) return false;
 
-      // 提取地图的纯英文名
       const featureName = normalizeStr(feat.properties.name_en || feat.properties.name || '');
       const validPlaces = normalizedFootprints[countryCode];
 
-      // 极速判断：精准相等即点亮
       return validPlaces.includes(featureName);
     };
 
@@ -97,16 +92,23 @@ nav_order: 5
       .polygonsData(allFeatures)
       .polygonCapColor(feat => {
         if (feat.properties.isVisited || isPlaceVisited(feat)) {
-          // 【修复 3】：把 0.8 改成 0.95，让红色更醇厚
-          return 'rgba(220, 53, 69, 0.95)';
+          // 【优化 1：取消透视】使用 100% 不透明的红色
+          return '#dc3545'; 
         }
         return baseColor;
       })
       .polygonAltitude(feat => feat.properties.isVisited ? 0.005 : 0)
       .polygonStrokeColor(() => strokeColor)
       .polygonLabel(feat => {
-        // Label 里依然显示它最初的 name，如果想全显示英文，可以把这里也改成 name_en
-        const name = feat.properties.name_en || feat.properties.name || 'Unknown';
+        // 【优化 2：修复 Unknown】火力覆盖所有可能的命名属性！
+        const name = feat.properties.name_en || 
+                     feat.properties.NAME_EN || 
+                     feat.properties.name || 
+                     feat.properties.NAME || 
+                     feat.properties.ADMIN || 
+                     feat.properties.SOVEREIGNT || 
+                     'Unknown';
+                     
         return `
           <div style="background: rgba(0, 0, 0, 0.75); color: white; padding: 6px 10px; border-radius: 4px; font-size: 14px;">
             <b>${name}</b>
