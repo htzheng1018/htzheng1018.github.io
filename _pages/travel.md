@@ -61,34 +61,31 @@ nav_order: 5
     document.getElementById('loading').style.display = 'none';
 
     const normalizedFootprints = visited.map(normalizeStr);
-    
-    // 过滤出你去过的省份
+
+    // 【优化 1】：只在加载时计算一次，过滤并给去过的省份打上 isVisited 标记
     const visitedProvinces = provinces.features.filter(feat => {
       const featureName = normalizeStr(feat.properties.name || feat.properties.NAME || feat.properties.NAME_1 || '');
-      return normalizedFootprints.some(place => 
+      const isVisited = normalizedFootprints.some(place => 
         featureName === place || 
         (place.length > 3 && featureName.includes(place)) || 
         (featureName.length > 3 && place.includes(featureName))
       );
+
+      if (isVisited) {
+        feat.properties.isVisited = true; // 打上专属红色通行证
+        return true;
+      }
+      return false;
     });
 
     const allFeatures = [...countries.features, ...visitedProvinces];
 
     globe
       .polygonsData(allFeatures)
-      .polygonCapColor(feat => {
-        const featureName = normalizeStr(feat.properties.name || feat.properties.NAME || feat.properties.NAME_1 || '');
-        const isVisited = normalizedFootprints.some(place => 
-          featureName === place || 
-          (place.length > 3 && featureName.includes(place)) || 
-          (featureName.length > 3 && place.includes(featureName))
-        );
-
-        if (isVisited || visitedProvinces.includes(feat)) {
-          return 'rgba(220, 53, 69, 0.8)';
-        }
-        return baseColor;
-      })
+      // 【优化 2】：极速读取标记，瞬间变红
+      .polygonCapColor(feat => feat.properties.isVisited ? 'rgba(220, 53, 69, 0.8)' : baseColor)
+      // 【优化 3】：解决黑红闪烁！去过的省份稍微凸起(0.005)，国家底图贴地(0)
+      .polygonAltitude(feat => feat.properties.isVisited ? 0.005 : 0)
       .polygonStrokeColor(() => strokeColor)
       .polygonLabel(feat => {
         const name = feat.properties.name || feat.properties.NAME || feat.properties.NAME_1 || 'Unknown';
