@@ -46,29 +46,35 @@ nav_order: 5
     loadData('{{ "/assets/json/countries.geojson" | relative_url }}'),
     loadData('{{ "/assets/json/provinces.geojson" | relative_url }}'),
     loadData('{{ "/assets/json/visited.json" | relative_url }}')
-  ]).then(([countries, provinces, visited]) => {
+  ]).then(([countries, provinces, visitedDict]) => {
     
     document.getElementById('loading').style.display = 'none';
 
-    const normalizedFootprints = visited.map(normalizeStr);
+    // 预处理字典：将所有省份名称转小写并去音标
+    const normalizedFootprints = {};
+    for (const [countryCode, places] of Object.entries(visitedDict)) {
+      normalizedFootprints[countryCode] = places.map(normalizeStr);
+    }
 
-    const isPlaceVisited = (featureName) => {
-      if (!featureName) return false;
-      return normalizedFootprints.some(place => {
+    // 【结构化匹配】：先卡国家代码，再查省份
+    const isPlaceVisited = (feat) => {
+      const countryCode = feat.properties.iso_a2 || feat.properties.ISO_A2 || '';
+      
+      // 如果这个国家你根本没去过，直接一刀切判定为 false，极速过滤！
+      if (!normalizedFootprints[countryCode]) return false;
+
+      const featureName = normalizeStr(feat.properties.name || feat.properties.NAME || feat.properties.NAME_1 || '');
+      const validPlaces = normalizedFootprints[countryCode];
+
+      return validPlaces.some(place => {
         // 1. 完全精准一致
         if (featureName === place) return true;
         
-        // 2. 特殊缩写处理（绝对精准，拒绝碰瓷）
+        // 2. 特殊缩写处理
         if (place === 'dc' && (featureName === 'district of columbia' || featureName === 'washington dc')) return true;
-        // 【修复点】：精准匹配内蒙古的常见拼写，不再使用宽泛的 includes('mongol')
-        if (place === 'inner mongol' && (featureName === 'inner mongolia' || featureName === 'nei mongol' || featureName === 'nei mongol zizhiqu')) return true;
+        if (place === 'inner mongol' && (featureName.includes('mongol') || featureName.includes('nei'))) return true;
 
-        // 3. 防碰瓷黑名单
-        if (place === 'california' && featureName.includes('baja')) return false;
-        if (place === 'virginia' && featureName.includes('west')) return false;
-        if (place === 'york' && featureName.includes('new')) return false;
-
-        // 4. 安全的单词边界匹配
+        // 3. 单词边界匹配
         if (place.length > 3) {
           try {
             const regex = new RegExp(`\\b${place}\\b`, 'i');
@@ -82,8 +88,7 @@ nav_order: 5
     };
 
     const visitedProvinces = provinces.features.filter(feat => {
-      const featureName = normalizeStr(feat.properties.name || feat.properties.NAME || feat.properties.NAME_1 || '');
-      if (isPlaceVisited(featureName)) {
+      if (isPlaceVisited(feat)) {
         feat.properties.isVisited = true; 
         return true;
       }
@@ -92,7 +97,6 @@ nav_order: 5
 
     const allFeatures = [...countries.features, ...visitedProvinces];
 
-    // 修复 3D 拓扑翻转问题
     allFeatures.forEach(feat => {
       if (!feat.geometry) return;
       if (feat.geometry.type === 'Polygon') {
@@ -105,8 +109,7 @@ nav_order: 5
     globe
       .polygonsData(allFeatures)
       .polygonCapColor(feat => {
-        const featureName = normalizeStr(feat.properties.name || feat.properties.NAME || feat.properties.NAME_1 || '');
-        if (isPlaceVisited(featureName) || visitedProvinces.includes(feat)) {
+        if (feat.properties.isVisited || isPlaceVisited(feat)) {
           return 'rgba(220, 53, 69, 0.8)';
         }
         return baseColor;
