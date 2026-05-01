@@ -20,9 +20,10 @@ nav_order: 5
 <script>
   const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
   
-  // 【优化 1：取消透视】直接使用 100% 不透明的实体颜色 (Hex)
-  const baseColor = isDarkMode ? '#2b2b2b' : '#e0e0e0'; // 未去过的陆地：深灰 / 浅灰
-  const strokeColor = isDarkMode ? '#444444' : '#cccccc'; // 边界线颜色
+  // 【配色大升级】：引入海洋颜色，并让陆地和海洋在亮/暗模式下完美适配
+  const oceanColor = isDarkMode ? '#041122' : '#c6e0ff'; // 海洋：深藏青 / 浅海蓝
+  const baseColor = isDarkMode ? '#2b2b2b' : '#f8f9fa';  // 没去过的陆地：深灰 / 极浅灰（近白）
+  const strokeColor = isDarkMode ? '#444444' : '#cccccc'; // 边界线
   
   const normalizeStr = (str) => {
     return str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
@@ -33,9 +34,10 @@ nav_order: 5
   const globe = Globe()(elem)
     .width(elem.clientWidth)
     .height(elem.clientHeight)
-    .backgroundColor('rgba(0,0,0,0)') // 保持外部背景透明
-    .showGlobe(false) // 保持内核隐藏（海洋全透明）
-    .polygonAltitude(0); 
+    .backgroundColor('rgba(0,0,0,0)') 
+    // 【修改点】：召唤地球本体作为海洋，并涂上我们调配的蓝色
+    .showGlobe(true) 
+    .globeColor(oceanColor); 
 
   const loadData = (url) => {
     return fetch(url).then(r => {
@@ -52,13 +54,11 @@ nav_order: 5
     
     document.getElementById('loading').style.display = 'none';
 
-    // 预处理字典
     const normalizedFootprints = {};
     for (const [countryCode, places] of Object.entries(visitedDict)) {
       normalizedFootprints[countryCode] = places.map(normalizeStr);
     }
 
-    // 极简精准匹配
     const isPlaceVisited = (feat) => {
       const countryCode = feat.properties.iso_a2 || feat.properties.ISO_A2 || '';
       if (!normalizedFootprints[countryCode]) return false;
@@ -92,15 +92,14 @@ nav_order: 5
       .polygonsData(allFeatures)
       .polygonCapColor(feat => {
         if (feat.properties.isVisited || isPlaceVisited(feat)) {
-          // 【优化 1：取消透视】使用 100% 不透明的红色
-          return '#dc3545'; 
+          return '#dc3545'; // 100% 不透明的红色
         }
         return baseColor;
       })
-      .polygonAltitude(feat => feat.properties.isVisited ? 0.005 : 0)
+      // 【修改点】：给陆地增加一点点海拔，防止和蓝色的海洋表面打架闪烁
+      .polygonAltitude(feat => feat.properties.isVisited ? 0.01 : 0.005)
       .polygonStrokeColor(() => strokeColor)
       .polygonLabel(feat => {
-        // 【优化 2：修复 Unknown】火力覆盖所有可能的命名属性！
         const name = feat.properties.name_en || 
                      feat.properties.NAME_EN || 
                      feat.properties.name || 
