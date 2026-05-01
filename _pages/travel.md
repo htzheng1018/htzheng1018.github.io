@@ -20,10 +20,9 @@ nav_order: 5
 <script>
   const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
   
-  // 【配色大升级】：引入海洋颜色，并让陆地和海洋在亮/暗模式下完美适配
-  const oceanColor = isDarkMode ? '#041122' : '#c6e0ff'; // 海洋：深藏青 / 浅海蓝
-  const baseColor = isDarkMode ? '#2b2b2b' : '#f8f9fa';  // 没去过的陆地：深灰 / 极浅灰（近白）
-  const strokeColor = isDarkMode ? '#444444' : '#cccccc'; // 边界线
+  // 【稳定版配色】：半透明磨砂质感，有效遮挡背面线条
+  const baseColor = isDarkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)';
+  const strokeColor = isDarkMode ? '#444' : '#ccc';
   
   const normalizeStr = (str) => {
     return str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
@@ -34,10 +33,9 @@ nav_order: 5
   const globe = Globe()(elem)
     .width(elem.clientWidth)
     .height(elem.clientHeight)
-    .backgroundColor('rgba(0,0,0,0)') 
-    // 【修改点】：召唤地球本体作为海洋，并涂上我们调配的蓝色
-    .showGlobe(true) 
-    .globeColor(oceanColor); 
+    .backgroundColor('rgba(0,0,0,0)')
+    .showGlobe(false) // 隐藏地球内核，保留全息空心感
+    .polygonAltitude(0); 
 
   const loadData = (url) => {
     return fetch(url).then(r => {
@@ -54,11 +52,13 @@ nav_order: 5
     
     document.getElementById('loading').style.display = 'none';
 
+    // 预处理字典
     const normalizedFootprints = {};
     for (const [countryCode, places] of Object.entries(visitedDict)) {
       normalizedFootprints[countryCode] = places.map(normalizeStr);
     }
 
+    // 极简精准匹配
     const isPlaceVisited = (feat) => {
       const countryCode = feat.properties.iso_a2 || feat.properties.ISO_A2 || '';
       if (!normalizedFootprints[countryCode]) return false;
@@ -79,6 +79,7 @@ nav_order: 5
 
     const allFeatures = [...countries.features, ...visitedProvinces];
 
+    // 修复 3D 拓扑翻转
     allFeatures.forEach(feat => {
       if (!feat.geometry) return;
       if (feat.geometry.type === 'Polygon') {
@@ -92,14 +93,14 @@ nav_order: 5
       .polygonsData(allFeatures)
       .polygonCapColor(feat => {
         if (feat.properties.isVisited || isPlaceVisited(feat)) {
-          return '#dc3545'; // 100% 不透明的红色
+          return 'rgba(220, 53, 69, 0.95)'; // 醇厚高亮的红色
         }
         return baseColor;
       })
-      // 【修改点】：给陆地增加一点点海拔，防止和蓝色的海洋表面打架闪烁
-      .polygonAltitude(feat => feat.properties.isVisited ? 0.01 : 0.005)
+      .polygonAltitude(feat => feat.properties.isVisited ? 0.005 : 0)
       .polygonStrokeColor(() => strokeColor)
       .polygonLabel(feat => {
+        // 【完美修复 Unknown】：依次读取国家和省份的各种标准字段
         const name = feat.properties.name_en || 
                      feat.properties.NAME_EN || 
                      feat.properties.name || 
