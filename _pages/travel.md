@@ -34,13 +34,14 @@ nav_order: 5
   };
 
   const elem = document.getElementById('globeViz');
+  
+// 【修复 1】：强制指定初始化时的宽度和高度，解决地球偏移问题
   const globe = Globe()(elem)
     .width(elem.clientWidth)
     .height(elem.clientHeight)
     .backgroundColor('rgba(0,0,0,0)')
     .showGlobe(false)
-    .polygonAltitude(0) 
-    .polygonResolution(2);
+    .polygonAltitude(0); // <--- 注意，这里以分号结尾，删掉了下一行的 polygonResolution
 
   // 【终极升级】：严苛的 Fetch 拦截器，一旦找不到文件立刻在屏幕上报错！
   const loadData = (url) => {
