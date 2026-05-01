@@ -35,15 +35,15 @@ nav_order: 5
 
   const elem = document.getElementById('globeViz');
   
-// 【修复 1】：强制指定初始化时的宽度和高度，解决地球偏移问题
+  // 初始化地球仪（基础配置）
   const globe = Globe()(elem)
     .width(elem.clientWidth)
     .height(elem.clientHeight)
     .backgroundColor('rgba(0,0,0,0)')
     .showGlobe(false)
-    .polygonAltitude(0); // <--- 注意，这里以分号结尾，删掉了下一行的 polygonResolution
+    .polygonResolution(2); 
 
-  // 【终极升级】：严苛的 Fetch 拦截器，一旦找不到文件立刻在屏幕上报错！
+  // 严苛的 Fetch 拦截器
   const loadData = (url) => {
     return fetch(url).then(r => {
       if (!r.ok) throw new Error(`找不到文件 (HTTP ${r.status}): ${url}`);
@@ -51,7 +51,28 @@ nav_order: 5
     });
   };
 
-  // 使用 Jekyll 的相对路径，防止 GitHub Pages 路径迷失
+  // 【终极匹配算法】：严谨判断，绝不乱杀无辜
+  const checkVisited = (featureName, footprints) => {
+    if (!featureName) return false;
+    
+    return footprints.some(place => {
+      // 1. 完全精准匹配
+      if (featureName === place) return true;
+      
+      // 2. 允许带行政后缀的匹配 (如：地图叫 "sichuan province"，你写的是 "sichuan")
+      // 限制条件：地图名字必须包含你的足迹，且长度不能相差超过 12 个字符
+      if (place.length > 3 && featureName.includes(place) && (featureName.length - place.length <= 12)) {
+        return true;
+      }
+
+      // 3. 特殊别名处理
+      if (place === 'inner mongol' && (featureName.includes('mongol') || featureName.includes('nei'))) return true;
+      if (place === 'dc' && featureName.includes('columbia')) return true;
+
+      return false;
+    });
+  };
+
   Promise.all([
     loadData('{{ "/assets/json/countries.geojson" | relative_url }}'),
     loadData('{{ "/assets/json/provinces.geojson" | relative_url }}'),
@@ -60,19 +81,14 @@ nav_order: 5
     
     document.getElementById('loading').style.display = 'none';
 
+    // 预处理你的 visited.json
     const normalizedFootprints = visited.map(normalizeStr);
-
-    // 【优化 1】：只在加载时计算一次，过滤并给去过的省份打上 isVisited 标记
+    
+    // 过滤出你去过的省份，打上专属标记
     const visitedProvinces = provinces.features.filter(feat => {
       const featureName = normalizeStr(feat.properties.name || feat.properties.NAME || feat.properties.NAME_1 || '');
-      const isVisited = normalizedFootprints.some(place => 
-        featureName === place || 
-        (place.length > 3 && featureName.includes(place)) || 
-        (featureName.length > 3 && place.includes(featureName))
-      );
-
-      if (isVisited) {
-        feat.properties.isVisited = true; // 打上专属红色通行证
+      if (checkVisited(featureName, normalizedFootprints)) {
+        feat.properties.isVisited = true; // 贴上标签，提升后续渲染速度
         return true;
       }
       return false;
@@ -80,7 +96,7 @@ nav_order: 5
 
     const allFeatures = [...countries.features, ...visitedProvinces];
 
-    // 【终极解药】：强制将 Mapshaper 导出的顺时针坐标反转为逆时针
+    // 修复 Mapshaper 导出的 3D 拓扑翻转问题 (将顺时针改为逆时针)
     allFeatures.forEach(feat => {
       if (!feat.geometry) return;
       if (feat.geometry.type === 'Polygon') {
@@ -92,9 +108,9 @@ nav_order: 5
 
     globe
       .polygonsData(allFeatures)
-      // 【优化 2】：极速读取标记，瞬间变红
+      // 【修复】：根据我们刚才打的 isVisited 标签，瞬间变红
       .polygonCapColor(feat => feat.properties.isVisited ? 'rgba(220, 53, 69, 0.8)' : baseColor)
-      // 【优化 3】：解决黑红闪烁！去过的省份稍微凸起(0.005)，国家底图贴地(0)
+      // 【修复】：解决闪烁！去过的省份微微凸起 (0.005)，国家底图完全贴地 (0)
       .polygonAltitude(feat => feat.properties.isVisited ? 0.005 : 0)
       .polygonStrokeColor(() => strokeColor)
       .polygonLabel(feat => {
@@ -111,8 +127,7 @@ nav_order: 5
     globe.controls().enableZoom = true;
 
   }).catch(error => {
-    // 拦截到错误，直接在网页中央显示红字！
-    document.getElementById('loading').innerHTML = `<span style="color: #dc3545;">⚠️ 数据加载失败: <br>${error.message}<br>请检查 GitHub 仓库中文件的扩展名是 .json 还是 .geojson</span>`;
+    document.getElementById('loading').innerHTML = `<span style="color: #dc3545;">⚠️ 数据加载失败: <br>${error.message}<br>请检查文件路径和后缀名</span>`;
     console.error("Fetch Data Error:", error);
   });
 
