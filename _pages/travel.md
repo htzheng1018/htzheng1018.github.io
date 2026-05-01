@@ -50,41 +50,25 @@ nav_order: 5
     
     document.getElementById('loading').style.display = 'none';
 
-    // 预处理字典：将所有省份名称转小写并去音标
+    // 预处理字典
     const normalizedFootprints = {};
     for (const [countryCode, places] of Object.entries(visitedDict)) {
       normalizedFootprints[countryCode] = places.map(normalizeStr);
     }
 
-    // 【结构化匹配】：先卡国家代码，再查省份
+    // 【极简精准匹配】：因为用了 name_en 和国家代码，不再需要任何复杂的正则和防碰瓷！
     const isPlaceVisited = (feat) => {
       const countryCode = feat.properties.iso_a2 || feat.properties.ISO_A2 || '';
       
-      // 如果这个国家你根本没去过，直接一刀切判定为 false，极速过滤！
+      // 如果国家没去过，直接 false
       if (!normalizedFootprints[countryCode]) return false;
 
-      const featureName = normalizeStr(feat.properties.name || feat.properties.NAME || feat.properties.NAME_1 || '');
+      // 提取地图的纯英文名
+      const featureName = normalizeStr(feat.properties.name_en || feat.properties.name || '');
       const validPlaces = normalizedFootprints[countryCode];
 
-      return validPlaces.some(place => {
-        // 1. 完全精准一致
-        if (featureName === place) return true;
-        
-        // 2. 特殊缩写处理
-        if (place === 'dc' && (featureName === 'district of columbia' || featureName === 'washington dc')) return true;
-        if (place === 'inner mongol' && (featureName.includes('mongol') || featureName.includes('nei'))) return true;
-
-        // 3. 单词边界匹配
-        if (place.length > 3) {
-          try {
-            const regex = new RegExp(`\\b${place}\\b`, 'i');
-            if (regex.test(featureName)) return true;
-          } catch (e) {
-            return false;
-          }
-        }
-        return false;
-      });
+      // 极速判断：精准相等即点亮
+      return validPlaces.includes(featureName);
     };
 
     const visitedProvinces = provinces.features.filter(feat => {
@@ -117,7 +101,8 @@ nav_order: 5
       .polygonAltitude(feat => feat.properties.isVisited ? 0.005 : 0)
       .polygonStrokeColor(() => strokeColor)
       .polygonLabel(feat => {
-        const name = feat.properties.name || feat.properties.NAME || feat.properties.NAME_1 || 'Unknown';
+        // Label 里依然显示它最初的 name，如果想全显示英文，可以把这里也改成 name_en
+        const name = feat.properties.name_en || feat.properties.name || 'Unknown';
         return `
           <div style="background: rgba(0, 0, 0, 0.75); color: white; padding: 6px 10px; border-radius: 4px; font-size: 14px;">
             <b>${name}</b>
@@ -130,7 +115,7 @@ nav_order: 5
     globe.controls().enableZoom = true;
 
   }).catch(error => {
-    document.getElementById('loading').innerHTML = `<span style="color: #dc3545;">⚠️ 数据加载失败: <br>${error.message}<br>请检查 GitHub 仓库中文件的扩展名是 .json 还是 .geojson</span>`;
+    document.getElementById('loading').innerHTML = `<span style="color: #dc3545;">⚠️ 数据加载失败: <br>${error.message}</span>`;
     console.error("Fetch Data Error:", error);
   });
 
