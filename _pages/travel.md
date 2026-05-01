@@ -8,13 +8,20 @@ nav_order: 5
 
 <!-- prettier-ignore-start -->
 
+<!-- 增加了一个相对定位的外层容器，用来放置 Loading 提示和地球仪 -->
 <div style="position: relative; width: 100%; height: 600px; margin-top: 20px;">
+  
+  <!-- Loading 提示框 -->
   <div id="loading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 1.2em; color: #888; z-index: 10;">
-    🌍 Downloading Map Data (approx. 15MB), please wait...
+    🌍 Downloading Map Data, please wait...
   </div>
+
+  <!-- 3D 地球仪容器 -->
   <div id="globeViz" style="width: 100%; height: 100%; cursor: grab; border-radius: 10px; overflow: hidden;"></div>
+
 </div>
 
+<!-- 引入库 -->
 <script src="https://unpkg.com/globe.gl"></script>
 
 <script>
@@ -52,26 +59,25 @@ nav_order: 5
 
     const normalizedFootprints = visited.map(normalizeStr);
 
-    // 【精准匹配逻辑封装】：彻底解决墨西哥、Mary等躺枪问题
+    // 【终极精准匹配逻辑】：彻底解决墨西哥、Janeiro 等无辜躺枪问题
     const isPlaceVisited = (featureName) => {
       if (!featureName) return false;
       return normalizedFootprints.some(place => {
         // 1. 完全精准一致
         if (featureName === place) return true;
         
-        // 2. 特殊缩写处理
-        if (place === 'dc' && featureName.includes('columbia')) return true;
-        if (place === 'inner mongol' && (featureName.includes('mongol') || featureName.includes('nei'))) return true;
+        // 2. 特殊缩写处理（严禁使用模糊 includes）
+        if (place === 'dc' && (featureName === 'district of columbia' || featureName === 'washington dc')) return true;
+        if (place === 'inner mongol' && (featureName === 'inner mongolia' || featureName === 'nei mongol' || featureName === 'nei mongol zizhiqu')) return true;
 
-        // 3. 单词边界匹配 (解决 Maryland 点亮 Mary 的问题)
+        // 3. 安全的单词边界匹配
         if (place.length > 3) {
           try {
-            // 使用 \b 确保匹配的是完整单词
+            // 使用 \b 确保匹配的是完整单词，避免 "nei" 匹配到 "janeiro"
             const regex = new RegExp(`\\b${place}\\b`, 'i');
             if (regex.test(featureName)) return true;
           } catch (e) {
-            // 如果正则特殊字符报错，退回基础 includes (但已剔除反向包含)
-            if (featureName.includes(place)) return true;
+            return false;
           }
         }
         return false;
@@ -89,6 +95,7 @@ nav_order: 5
 
     const allFeatures = [...countries.features, ...visitedProvinces];
 
+    // 修复 3D 拓扑翻转问题
     allFeatures.forEach(feat => {
       if (!feat.geometry) return;
       if (feat.geometry.type === 'Polygon') {
@@ -118,7 +125,8 @@ nav_order: 5
         `;
       });
 
-    globe.controls().autoRotate = true;
+    // 【修改点】：让地球静止。如果想让它慢慢转，改回 true 并将 Speed 调成 0.2
+    globe.controls().autoRotate = false;
     globe.controls().autoRotateSpeed = 1.0;
     globe.controls().enableZoom = true;
 
