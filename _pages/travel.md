@@ -80,6 +80,16 @@ nav_order: 5
 
     const allFeatures = [...countries.features, ...visitedProvinces];
 
+    // 【终极解药】：强制将 Mapshaper 导出的顺时针坐标反转为逆时针
+    allFeatures.forEach(feat => {
+      if (!feat.geometry) return;
+      if (feat.geometry.type === 'Polygon') {
+        feat.geometry.coordinates.forEach(ring => ring.reverse());
+      } else if (feat.geometry.type === 'MultiPolygon') {
+        feat.geometry.coordinates.forEach(poly => poly.forEach(ring => ring.reverse()));
+      }
+    });
+
     globe
       .polygonsData(allFeatures)
       // 【优化 2】：极速读取标记，瞬间变红
