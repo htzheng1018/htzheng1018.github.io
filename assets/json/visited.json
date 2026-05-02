@@ -1,21 +1,24 @@
 {
-    "CN": ["Beijing", "Tianjin", "Hubei", "Sichuan", "Liaoning", "Inner Mongolia", "Xinjiang", "Shandong", "Zhejiang", "Shanghai", "Shaanxi", "Hebei", "Chongqing", "Jiangsu"],
+    "CN": ["Beijing", "Tianjin", "Hubei", "Sichuan", "Liaoning", "Inner Mongolia", "Xinjiang", "Shandong", "Zhejiang", "Shanghai", "Shaanxi", "Hebei", "Chongqing", "Jiangsu", "Yunnan", "Fujian"],
     "JP": ["Tokyo", "Hokkaido"],
-    "AE": ["Dubai", "Abu Dhabi"],
-    "US": ["Michigan", "New York", "New Jersey", "Massachusetts", "Rhode Island", "Ohio", "Illinois", "Pennsylvania", "California", "Colorado", "Arizona", "District of Columbia", "Oklahoma", "New Mexico", "Texas", "Maryland", "Nebraska", "Missouri", "Iowa", "Nevada", "Utah"],
+    "AE": ["Emirate of Dubai", "Emirate of Abu Dhabi"],
+
     "DK": ["Denmark"],
     "DE": ["Berlin", "Bavaria", "Hesse"],
     "FR": ["Bouches-du-Rhône"],
+    "GB": [
+        "Cambridgeshire",
+        "London", "Westminster", "Kensington and Chelsea", "Hammersmith and Fulham", "Wandsworth", "Lambeth", "Southwark", "Tower Hamlets", "Hackney", "Islington", "Camden", "Brent", "Ealing", "Hounslow", "Richmond upon Thames", "Kingston upon Thames", "Merton", "Sutton", "Croydon", "Bromley", "Lewisham", "Greenwich", "Bexley", "Havering", "Barking and Dagenham", "Redbridge", "Newham", "Waltham Forest", "Haringey", "Enfield", "Barnet", "Harrow", "Hillingdon"
+	],
     "ES": ["Barcelona"],
     "IT": ["Rome"],
     "AT": ["Vienna"],
     "CZ": ["Prague"],
     "CH": ["Zurich", "Geneva", "Lucerne"],
-    "GB": [
-    	"Cambridgeshire",
-    	"London", "Westminster", "Kensington and Chelsea", "Hammersmith and Fulham", "Wandsworth", "Lambeth", "Southwark", "Tower Hamlets", "Hackney", "Islington", "Camden", "Brent", "Ealing", "Hounslow", "Richmond upon Thames", "Kingston upon Thames", "Merton", "Sutton", "Croydon", "Bromley", "Lewisham", "Greenwich", "Bexley", "Havering", "Barking and Dagenham", "Redbridge", "Newham", "Waltham Forest", "Haringey", "Enfield", "Barnet", "Harrow", "Hillingdon"
-		],
     "HU": ["Budapest"],
+
+    "US": ["Michigan", "New York", "New Jersey", "Massachusetts", "Rhode Island", "Ohio", "Illinois", "Pennsylvania", "California", "Colorado", "Arizona", "District of Columbia", "Oklahoma", "New Mexico", "Texas", "Maryland", "Nebraska", "Missouri", "Iowa", "Nevada", "Utah"],
+
     "ZA": ["Western Cape", "Gauteng", "Free State"],
     "TN": ["Tunis"]
 }
