@@ -121,7 +121,7 @@ nav_order: 5
     globe.controls().enableZoom = true;
 
   }).catch(error => {
-    document.getElementById('loading').innerHTML = `<span style="color: #dc3545;">⚠️ 数据加载失败: <br>${error.message}</span>`;
+    document.getElementById('loading').innerHTML = `<span style="color: #dc3545;">⚠️ Data loading failed: <br>${error.message}</span>`;
     console.error("Fetch Data Error:", error);
   });
 
