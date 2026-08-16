@@ -3,7 +3,7 @@
 ## 项目概览
 - 项目名称：Haotian's homepage
 - 项目旨在设计和维护 Haotian 的个人主页。
-- 项目根目录为 `/Users/gjp731/Desktop/research/homepage/my-new-homepage`。
+- 项目根目录为 `/Users/gjp731/Desktop/research/homepage/htzheng1018.github.io`。
 
 ## 工作原则
 - 默认只处理项目根目录及其子目录中的文件。
